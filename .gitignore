@@ -1,2 +1,7 @@
 server.py
 client.py
+build/
+dist/
+client.spec
+.env
+.txt
