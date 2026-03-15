@@ -5,3 +5,5 @@ dist/
 client.spec
 .env
 .txt
+bore_port.txt
+client_port_url.txt
